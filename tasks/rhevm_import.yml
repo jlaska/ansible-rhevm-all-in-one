@@ -13,7 +13,6 @@
 - name: rhevm_import | determine image name
   shell: basename {{appliance_file|dest}} | sed 's|\.\w*$||'
   register: appliance_name
-  when: appliance_name is ''
 
 - name: rhevm_import | determine if template already imported
   shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.templates.list | grep {{appliance_name.stdout}}
