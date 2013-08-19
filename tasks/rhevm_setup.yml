@@ -1,64 +1,64 @@
 ---
 
-- name: determine version of rhevm installed
+- name: rhevm_setup | determine version of rhevm installed
   shell: rpm -q --qf '%{version}' rhevm
   register: rhevm_version
 
-- name: generate answers.cfg files
+- name: rhevm_setup | generate answers.cfg files
   template: src=files/answers-{{rhevm_version.stdout}}.cfg.j2 dest=/etc/rhevm/answers.cfg
         owner=root group=root mode=0644
 
-- name: rhevm-setup --answer-file /etc/rhevm/answers.cfg
+- name: rhevm_setup | rhevm-setup --answer-file /etc/rhevm/answers.cfg
   shell: rhevm-setup --answer-file /etc/rhevm/answers.cfg
      creates=/etc/pki/ovirt-engine/keys/engine.p12
 
-- name: mkdir /export
+- name: rhevm_setup | mkdir /export
   shell: mkdir -p /export
      creates=/export
 
-- name: determine vdsm uid
+- name: rhevm_setup | determine vdsm uid
   shell: getent passwd vdsm | gawk 'BEGIN{FS=":"} {print $3}'
   register: vdsm_uid
 
-- name: determine kvm gid
+- name: rhevm_setup | determine kvm gid
   shell: getent group kvm | gawk 'BEGIN{FS=":"} {print $3}'
   register: kvm_gid
 
-- name: adjust /export permissions
+- name: rhevm_setup | adjust /export permissions
   shell: chown -R {{vdsm_uid.stdout}}:{{kvm_gid.stdout}} /export
 
-- name: define NFS export
+- name: rhevm_setup | define NFS export
   lineinfile: dest=/etc/exports state=present regexp='^/export' line='/export 0.0.0.0/0.0.0.0(rw)'
 
-- name: disable NFS4 support
+- name: rhevm_setup | disable NFS4 support
   lineinfile: dest=/etc/sysconfig/nfs state=present regexp='^NFS4_SUPPORT=no' line='NFS4_SUPPORT=no'
 
-- name: service nfsd restart
+- name: rhevm_setup | service nfsd restart
   service: name=nfs state=restarted
 
-- name: check if storagedomain is already available
+- name: rhevm_setup | check if storagedomain is already available
   shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.list --filter 'name={{export_domain}}'
   register: is_created
   ignore_errors: yes
 
-- name: ovirt storagedomains.add
+- name: rhevm_setup | ovirt storagedomains.add
   shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.add --name {{export_domain}}
   when: is_created|failed
 
-- name: check if storagedomain is already attached
+- name: rhevm_setup | check if storagedomain is already attached
   shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.list --filter 'name={{export_domain}} and datacenter={{datacenter}}'
   register: is_attached
   ignore_errors: yes
 
-- name: ovirt storagedomains.attach
+- name: rhevm_setup | ovirt storagedomains.attach
   shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.attach --name {{export_domain}} --datacenter {{datacenter}}
   when: is_attached|failed
 
-- name: check if storagedomain is activated
+- name: rhevm_setup | check if storagedomain is activated
   shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.list --filter 'name={{export_domain}} and datacenter={{datacenter}} and status=active'
   register: is_activated
   ignore_errors: yes
 
-- name: ovirt storagedomains.activate
+- name: rhevm_setup | ovirt storagedomains.activate
   shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.activate --name {{export_domain}} --datacenter {{datacenter}}
   when: is_activated|failed
