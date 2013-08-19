@@ -1,0 +1,97 @@
+---
+# Base playbook for cfme installation
+
+#
+# Dynamically create host groups based on distribution
+#
+- hosts: all
+  tasks:
+   - name: gather site specific fact data
+     action: site_facts
+
+   - name: group hosts by distribution
+     action: group_by key={{ansible_distribution}}
+
+#
+# For RedHat hosts, register to RHN
+#
+- hosts: RedHat
+  tasks:
+   - include: tasks/rhn_register.yml
+     when: rhn_method is defined
+
+#
+# For all other hosts, install CFME
+#
+- hosts: local
+
+  vars:
+     ovirt_cli_args: python files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}}
+  tasks:
+#   - include: tasks/yum_repos.yml
+#
+#   - name: install rhevm from rpm
+#     yum: name=$item state=present
+#     register: is_rhevm_rpm_installed
+#     ignore_errors: yes
+#     with_items: ['rhevm', 'rhevm-setup-plugin-allinone', 'rhevm-sdk', 'ovirt-engine-sdk', 'python-argparse']
+
+   - name: determine version of rhevm installed
+     shell: rpm -q --qf '%{version}' rhevm
+     register: rhevm_version
+
+   - name: generate answers.cfg files
+     template: src=files/answers-{{rhevm_version.stdout}}.cfg.j2 dest=/etc/rhevm/answers.cfg
+           owner=root group=root mode=0644
+
+   - name: rhevm-setup --answer-file /etc/rhevm/answers.cfg
+     shell: rhevm-setup --answer-file /etc/rhevm/answers.cfg
+        creates=/etc/pki/ovirt-engine/keys/engine.p12
+
+   - name: mkdir /export
+     shell: mkdir -p /export
+        creates=/export
+
+   - name: determine vdsm uid
+     shell: getent passwd vdsm | gawk 'BEGIN{FS=":"} {print $3}'
+     register: vdsm_uid
+
+   - name: determine kvm gid
+     shell: getent group kvm | gawk 'BEGIN{FS=":"} {print $3}'
+     register: kvm_gid
+
+   - name: adjust /export permissions
+     shell: chown -R {{vdsm_uid.stdout}}:{{kvm_gid.stdout}} /export
+
+   - name: define NFS export
+     lineinfile: dest=/etc/exports state=present regexp='^/export' line='/export 0.0.0.0/0.0.0.0(rw)'
+
+   - name: disable NFS4 support
+     lineinfile: dest=/etc/sysconfig/nfs state=present regexp='^NFS4_SUPPORT=no' line='NFS4_SUPPORT=no'
+
+   - name: service nfsd restart
+     service: name=nfs state=restarted
+
+   - name: ovirt storagedomains.list
+     shell: {{ovirt_cli_args}} storagedomains.list --name {{export_domain}}
+     register: storagedomains_list
+     ignore_errors: yes
+
+   - name: ovirt storagedomains.add
+     shell: {{ovirt_cli_args}} storagedomains.add --name {{export_domain}}
+     when: storagedomains_list|failed
+
+   - name: ovirt storagedomains.attach
+     shell: {{ovirt_cli_args}} storagedomains.attach --name {{export_domain}}
+     when: storagedomains_list|failed
+
+   - name: ovirt storagedomains.activate
+     shell: {{ovirt_cli_args}} storagedomains.activate --name {{export_domain}}
+     when: storagedomains_list|failed
+
+# TODO - If install from rpm was unsuccesful, try building it from upstream
+# (refer to http://www.ovirt.org/Building_oVirt_engine)
+#     when: is_rhevm_rpm_installed|failure
+
+  handlers:
+   - include: handlers/restart_services.yml

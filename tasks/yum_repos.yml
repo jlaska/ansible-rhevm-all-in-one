@@ -1,0 +1,11 @@
+---
+
+- name: yum_repos | enable requested repos
+  shell: yum-config-manager --enable $item 1>/dev/null
+  with_items: enabled_repos
+  when: enabled_repos is defined and enabled_repos|length > 0
+
+- name: yum_repos | disable requested repos
+  shell: yum-config-manager --disable $item 1>/dev/null
+  with_items: disabled_repos
+  when: disabled_repos is defined and enabled_repos|length > 0

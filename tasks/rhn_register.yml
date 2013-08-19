@@ -1,0 +1,39 @@
+---
+#
+# if rhn_method == rhn
+#
+
+- name: rhn_register | unregister from RHN-classic
+  rhn_register: state=absent username='$rhn_username' password='$rhn_password'
+  when: force_unregister is defined
+
+- name: rhn_register | register and subscribe to RHN-classic
+  rhn_register: state=present username='$rhn_username' password='$rhn_password' channels=$rhn_channels enable_eus='$enable_eus' server_url='$rhn_server_url'
+  when: rhn_method == 'rhn'
+
+- name: rhn_register | gather currently subscribed channels
+  shell: rhn-channel -u '$rhn_username' -p '$rhn_password' -l
+  register: current_rhn_channels
+  when: rhn_method == 'rhn'
+
+- name: rhn_register | enable RHN channels
+  shell: rhn-channel -u '$rhn_username' -p '$rhn_password' -a -c $item
+  with_items: rhn_channels
+  when: rhn_method == 'rhn' and rhn_channels|length > 0
+
+#
+# if rhn_method == rhsm
+#
+
+- name: rhn_register | unregister from cert-based RHN
+  redhat_subscription: state=absent
+  when: force_unregister is defined
+
+- name: rhn_register | register and subscribe to cert-based RHN
+  redhat_subscription: state=present username='$rhn_username' password='$rhn_password' autosubscribe='$autosubscribe' pool='$rhsm_pool' server_hostname='$rhsm_server_hostname' server_insecure='$rhsm_server_insecure' rhsm_baseurl='$rhsm_baseurl'
+  when: rhn_method == 'rhsm'
+
+- name: rhn_register | enable CF RHN repos
+  shell: subscription-manager repos --enable $item
+  with_items: rhsm_repos
+  when: rhn_method == 'rhsm' and rhsm_repos|length > 0

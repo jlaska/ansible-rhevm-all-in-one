@@ -1,0 +1,43 @@
+#
+#
+#
+export_domain: local_export
+
+#
+# rhevm-setup values
+#
+
+override_httpd_config: "yes"
+http_port: "80"
+https_port: "443"
+random_passwords: "no"
+# RHEV-3.3 will support randomly defined MAC_RANGE.  Until then, manually
+# define a random mac range.
+# http://gerrit.ovirt.org/gitweb?p=ovirt-engine.git;a=commit;h=5915b8803090963fa11cfd9418fe933056905b58
+mac_range: "00:1A:4A:01:71:00-00:1A:4A:01:71:ff"
+# MAC_RANGE_RANDOM=$(python -c "import random; print '{newbase}:00-{newbase}:ff'.format(
+# newbase='{base}:{part1:02X}:{part2:02X}'.format(
+#     base='00:1A:4A',
+#     part1=int(random.randrange(255)),
+#     part2=int(random.randrange(255)),));")
+host_fqdn: $ansible_fqdn
+auth_user: "admin@internal"
+auth_pass: "redhat"
+org_name: $ansible_domain
+dc_type: "NFS"
+db_remote_install: "local"
+db_host: ""
+db_port: "5432"
+db_admin: "postgres"
+db_remote_pass: "redhat"
+db_secure_connection: "no"
+db_local_pass: "redhat"
+nfs_mp: "/var/lib/exports/iso"
+iso_domain_name: "ISO_DOMAIN"
+config_nfs: "yes"
+override_iptables: "yes"
+override_firewall: "iptables"
+config_allinone: "yes"
+storage_path: "/data"
+superuser_pass: "redhat"
+

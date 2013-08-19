@@ -1,0 +1,39 @@
+rhn_method: rhsm
+rhn_username:
+rhn_password:
+
+#
+# RHN configuration
+#
+enable_eus: true
+rhn_server_url: https://xmlrpc.rhn.redhat.com/XMLRPC
+#rhn_server_url: https://xmlrpc.rhn.errata.stage.redhat.com/XMLRPC
+#rhn_server_url: https://xmlrpc.qa.stage.redhat.com/XMLRPC
+rhn_channels:
+    - rhel-x86_64-server-6-cf-me-2
+
+#
+# RHSM configuration
+#
+rhsm_server_hostname: subscription.rhn.redhat.com
+#rhsm_server_hostname: subscription.rhn.stage.redhat.com
+#rhsm_server_hostname: subscription.rhn.qa.redhat.com
+rhsm_server_insecure: false
+rhsm_baseurl: https://cdn.redhat.com
+autosubscribe: true
+rhsm_pool: 'Red Hat Enterprise Virtualization'
+rhsm_repos:
+    - rhel-6-server-rpms
+    - rhel-6-server-rhev-agent-rpms
+    - rhel-6-server-rhev-mgmt-agent-rpms
+    - rhel-6-server-rhevh-rpms
+    - rhel-6-server-rhevm-3.1-rpms
+    - rhel-6-server-rhevm-3.2-rpms
+    - rhel-6-server-supplementary-rpms
+    - jb-eap-6-for-rhel-6-server-rpms
+
+#
+# YUM repo configuration
+#
+enabled_repos: []
+disabled_repos: []

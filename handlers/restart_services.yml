@@ -1,0 +1,9 @@
+- name: restart memcached
+  action: service name=memcached state=restarted enabled=yes
+
+- name: restart postgresql
+  action: service name=postgresql state=restarted enabled=yes
+
+- name: restart iptables
+  action: service name=iptables state=restarted enabled=yes
+
