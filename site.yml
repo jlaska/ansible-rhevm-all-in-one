@@ -27,6 +27,7 @@
 
   vars:
      ovirt_cli_args: python files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}}
+
   tasks:
 #   - include: tasks/yum_repos.yml
 #
@@ -73,20 +74,20 @@
      service: name=nfs state=restarted
 
    - name: ovirt storagedomains.list
-     shell: {{ovirt_cli_args}} storagedomains.list --name {{export_domain}}
+     shell: ovirt_cli_args storagedomains.list --name {{export_domain}}
      register: storagedomains_list
      ignore_errors: yes
 
    - name: ovirt storagedomains.add
-     shell: {{ovirt_cli_args}} storagedomains.add --name {{export_domain}}
+     shell: ovirt_cli_args storagedomains.add --name {{export_domain}}
      when: storagedomains_list|failed
 
    - name: ovirt storagedomains.attach
-     shell: {{ovirt_cli_args}} storagedomains.attach --name {{export_domain}}
+     shell: ovirt_cli_args storagedomains.attach --name {{export_domain}}
      when: storagedomains_list|failed
 
    - name: ovirt storagedomains.activate
-     shell: {{ovirt_cli_args}} storagedomains.activate --name {{export_domain}}
+     shell: ovirt_cli_args storagedomains.activate --name {{export_domain}}
      when: storagedomains_list|failed
 
 # TODO - If install from rpm was unsuccesful, try building it from upstream
