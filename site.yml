@@ -92,7 +92,7 @@
      when: is_attached|failed
 
    - name: check if storagedomain is activated
-     shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.list --filter 'name={{export_domain}} and datacenter={{datacenter}} and state=active'
+     shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.list --filter 'name={{export_domain}} and datacenter={{datacenter}} and status=active'
      register: is_activated
      ignore_errors: yes
 
