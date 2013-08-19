@@ -17,6 +17,7 @@
 - name: rhevm_import | determine if template already imported
   shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.templates.list | grep {{appliance_name.stdout}}
   register: is_image_uploaded
+  ignore_errors: yes
 
 - name: rhevm_import | rhevm-image-uploader
   shell: rhevm-image-uploader -v -e {{export_domain}} --name {{appliance_name.stdout}} upload {{appliance_file.dest}}
@@ -25,6 +26,7 @@
 - name: rhevm_import | wait for template upload to complete
   shell: MAX_TRIES=60 ; TRY=1 ; until files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.templates.list | grep {{appliance_name.stdout}} ; do [ $TRY -gt $MAX_TRIES ] && exit 1 ; sleep 5; TRY=$((TRY+1)) ; done
   register: is_image_available
+  ignore_errors: yes
 
 - name: rhevm_import | storagedomains.template.import
   shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.templates.import --name {{appliance_name.stdout}}
