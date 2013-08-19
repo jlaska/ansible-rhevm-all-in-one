@@ -10,16 +10,27 @@
   get_url: url={{appliance_url}} dest=/tmp mode=0640
   register: appliance_file
 
-- name: rhevm_import | testing echo
-  shell: echo {{appliance_file}}
+- name: rhevm_import | determine image name
+  shell: basename {{appliance_file|dest}} | sed 's|\.\w*$||'
+  register: appliance_name
+  when: appliance_name is ''
 
-## - name: rhevm_import | rhevm-image-uploader
-##   shell: rhevm-image-uploader -v -e {{local_export}} --name {{appliance_file.dest}} --upload {{appliance_file}}
-##     creates=???
-## 
-## # Upload appliance to export domain
-## rlRun "rhevm-image-uploader -v -e $EXPORT_DOMAIN --name $APPLIANCE_NAME upload $APPLIANCE_FILE"
-## 
+- name: rhevm_import | determine if template already imported
+  shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.templates.list --filter name={{appliance_name.stdout}}
+  register: is_image_uploaded
+
+- name: rhevm_import | rhevm-image-uploader
+  shell: rhevm-image-uploader -v -e {{export_domain}} --name {{appliance_name.stdout}} upload {{appliance_file.dest}}
+  when: is_image_uploaded|failed
+
+- name: rhevm_import | wait for template upload to complete
+  shell: MAX_TRIES=60 ; TRY=1 ; until files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.templates.list | grep {{appliance_name.stdout}} ; do [ $TRY -gt $MAX_TRIES ] && exit 1 ; sleep 5; TRY=$((TRY+1)) ; done
+  register: is_image_available
+
+- name: rhevm_import | storagedomains.template.import
+  shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.templates.import --name {{appliance_name.stdout}}
+  when: is_image_available|success
+
 ## # Wait for template to be available
 ## TRY=1
 ## MAX_TRIES=60
@@ -35,6 +46,6 @@
 ##         break
 ##     fi
 ## done
-## 
+##
 ## # Import template
 ## rlRun "$OVIRT_CLI storagedomains.templates.import --name $APPLIANCE_NAME" 0
