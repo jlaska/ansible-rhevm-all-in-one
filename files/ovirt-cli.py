@@ -217,11 +217,21 @@ class Cmd_StorageDomains_Deactivate(Cmd_Base):
 
 class Cmd_StorageDomains_Templates_List(Cmd_Base):
     def execute(self, args):
-        if not args.noheader: print "%-38s %-20s %-40s" % ("Id", "Name", "Storage Domain")
-        if not args.noheader: print "%-38s=%-20s=%-40s" % ("="*38, "="*20, "="*40)
-        for domain in self._api.storagedomains.list(args.filter):
-            for t in domain.templates.list():
-                print "%-38s %-20s %-40s" % (t.id, t.name, domain.name)
+        domains = self._api.storagedomains.list()
+        if domains:
+            output = list()
+            for domain in domains:
+                # FIXME - the filter doesn't apply at this level ... must reconcile with ovirtsdk
+                for t in domain.templates.list(args.filter):
+                    output.append("%-38s %-40s %-40s" % (t.id, t.name, domain.name))
+            if output:
+                if not args.noheader: print "%-38s %-40s %-40s" % ("Id", "Name", "Storage Domain")
+                if not args.noheader: print "%-38s=%-40s=%-40s" % ("="*38, "="*40, "="*40)
+                print "\n".join(output)
+            else:
+                raise Exception("No templates found")
+        else:
+            raise Exception("No storage domains found")
 
 class Cmd_StorageDomains_Templates_Import(Cmd_Base):
     def execute(self, args):
@@ -277,10 +287,14 @@ class Cmd_Datacenters_List(Cmd_Base):
 # =================================================
 class Cmd_Templates_List(Cmd_Base):
     def execute(self, args):
-        if not args.noheader: print "%-38s %-20s %-15s" % ("Id", "Name", "Origin")
-        if not args.noheader: print "%-38s=%-20s=%-15s" % ("="*38, "="*30, "="*15)
-        for t in self._api.templates.list(args.filter):
-            print "%-38s %-20s %-15s" % (t.id, t.name, t.origin)
+        templates = self._api.templates.list(args.filter)
+        if templates:
+            if not args.noheader: print "%-38s %-20s %-15s" % ("Id", "Name", "Origin")
+            if not args.noheader: print "%-38s=%-20s=%-15s" % ("="*38, "="*30, "="*15)
+            for t in templates:
+                print "%-38s %-20s %-15s" % (t.id, t.name, t.origin)
+        else:
+            raise Exception("No matching templates found")
 
 def parse_args():
 
