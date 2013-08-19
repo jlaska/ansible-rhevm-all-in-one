@@ -73,22 +73,32 @@
    - name: service nfsd restart
      service: name=nfs state=restarted
 
-   - name: ovirt storagedomains.list
-     shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.list --name {{export_domain}}
-     register: storagedomains_list
+   - name: check if storagedomain is already available
+     shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.list --filter 'name={{export_domain}}'
+     register: is_created
      ignore_errors: yes
 
    - name: ovirt storagedomains.add
      shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.add --name {{export_domain}}
-     when: storagedomains_list|failed
+     when: is_created|failed
+
+   - name: check if storagedomain is already attached
+     shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.list --filter 'name={{export_domain}} and datacenter={{datacenter}}'
+     register: is_attached
+     ignore_errors: yes
 
    - name: ovirt storagedomains.attach
-     shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.attach --name {{export_domain}}
-     when: storagedomains_list|failed
+     shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.attach --name {{export_domain}} --datacenter {{datacenter}}
+     when: is_attached|failed
+
+   - name: check if storagedomain is activated
+     shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.list --filter 'name={{export_domain}} and datacenter={{datacenter}} and state=active'
+     register: is_activated
+     ignore_errors: yes
 
    - name: ovirt storagedomains.activate
-     shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.activate --name {{export_domain}}
-     when: storagedomains_list|failed
+     shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.activate --name {{export_domain}} --datacenter {{datacenter}}
+     when: is_activated|failed
 
 # TODO - If install from rpm was unsuccesful, try building it from upstream
 # (refer to http://www.ovirt.org/Building_oVirt_engine)

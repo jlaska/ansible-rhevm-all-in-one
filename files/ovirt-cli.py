@@ -139,14 +139,14 @@ class Cmd_StorageDomains_List(Cmd_Base):
     def execute(self, args):
         sds = self._api.storagedomains.list(args.filter)
         if sds:
-            if not args.noheader: print "%-15s %-40s %-10s %-10s" % ("NAME", "ID", "TYPE", "STATE")
-            if not args.noheader: print "%-15s=%-40s=%-10s=%-10s" % ("="*15, "="*40, "="*10, "="*10)
+            if not args.noheader: print "%-15s %-40s %-10s %-10s %-40s" % ("NAME", "ID", "TYPE", "STATE", "DATACENTER")
+            if not args.noheader: print "%-15s=%-40s=%-10s=%-10s=%-40s" % ("="*15, "="*40, "="*10, "="*10, "="*40)
             for sd in sds:
-                if sd.get_status() is None:
-                    state = None
+                if sd.status is None:
+                    state = "???"
                 else:
-                    state = sd.get_status().get_state()
-                print "%-15s %-40s %-10s %-10s" % (sd.get_name(), sd.get_id(), sd.get_type(), state)
+                    state = sd.status.state
+                print "%-15s %-40s %-10s %-10s %-40s" % (sd.get_name(), sd.get_id(), sd.get_type(), state, sd.data_center)
         else:
             raise Exception("No matching storagedomains found")
 
@@ -263,11 +263,15 @@ class Cmd_Clusters_List(Cmd_Base):
 # =================================================
 class Cmd_Datacenters_List(Cmd_Base):
     def execute(self, args):
-        s = "{id:<38} {name:<20} {state:<20}"
-        if not args.noheader: print s.format(id="Id", name="Name", state="State")
-        if not args.noheader: print s.replace(' ','=').format(id='='*38, name='='*20, state='='*20)
-        for dc in self._api.datacenters.list(args.filter):
-            print s.format(id=dc.id, name=dc.name, state=dc.status.state)
+        dcs = self._api.datacenters.list(args.filter)
+        if dcs:
+            s = "{id:<38} {name:<20} {state:<20}"
+            if not args.noheader: print s.format(id="Id", name="Name", state="State")
+            if not args.noheader: print s.replace(' ','=').format(id='='*38, name='='*20, state='='*20)
+            for dc in self._api.datacenters.list(args.filter):
+                print s.format(id=dc.id, name=dc.name, state=dc.status.state)
+        else:
+            raise Exception("No datacenters found")
 
 # Template commands
 # =================================================
