@@ -3,6 +3,7 @@
 #
 datacenter: local_datacenter
 export_domain: local_export
+appliance_url: ''
 
 #
 # rhevm-setup values

@@ -39,6 +39,8 @@
 
    - include: tasks/rhevm_setup.yml
 
+   - include: tasks/rhevm_import.yml
+
 # TODO - If install from rpm was unsuccesful, try building it from upstream
 # (refer to http://www.ovirt.org/Building_oVirt_engine)
 #     when: is_rhevm_rpm_installed|failure

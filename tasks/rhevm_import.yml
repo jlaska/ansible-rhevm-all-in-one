@@ -1,0 +1,40 @@
+---
+
+- name: rhevm_import | enable non-interactive rhevm-image-uploader
+  lineinfile: dest={{item}} state=present regexp='^passwd=' line='passwd={{auth_pass}}'
+  with_items:
+    - /etc/rhevm/imageuploader.conf
+    - /etc/ovirt-engine/imageuploader.conf
+
+- name: rhevm_import | download appliance
+  get_url: url={{appliance_url}} dest=/tmp mode=0640
+  register: appliance_file
+
+- name: rhevm_import | testing echo
+  shell: echo {{appliance_file}}
+
+## - name: rhevm_import | rhevm-image-uploader
+##   shell: rhevm-image-uploader -v -e {{local_export}} --name {{appliance_file.dest}} --upload {{appliance_file}}
+##     creates=???
+## 
+## # Upload appliance to export domain
+## rlRun "rhevm-image-uploader -v -e $EXPORT_DOMAIN --name $APPLIANCE_NAME upload $APPLIANCE_FILE"
+## 
+## # Wait for template to be available
+## TRY=1
+## MAX_TRIES=60
+## while [ -z $($OVIRT_CLI storagedomains.templates.list | grep $APPLIANCE_NAME) ]; do
+##     rlLogInfo "Waiting for template '$APPLIANCE_NAME' to be available ($TRY) ..."
+##     sleep 5
+##     TRY=$((TRY+1))
+##     # Fail if unable to reach success after MAX_TRIES attempts
+##     if [ $TRY -gt $MAX_TRIES ]; then
+##         rlFail "Unable to determine template '$APPLIANCE_NAME' activation"
+##         rlRun "$OVIRT_CLI storagedomains.templates.list"
+##         rlRun "$OVIRT_CLI templates.list"
+##         break
+##     fi
+## done
+## 
+## # Import template
+## rlRun "$OVIRT_CLI storagedomains.templates.import --name $APPLIANCE_NAME" 0
