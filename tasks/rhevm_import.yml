@@ -11,7 +11,7 @@
   register: appliance_file
 
 - name: rhevm_import | determine image name
-  shell: basename {{appliance_file|dest}} | sed 's|\.\w*$||'
+  shell: basename {{appliance_file.dest}} | sed 's|\.\w*$||'
   register: appliance_name
 
 - name: rhevm_import | determine if template already imported
