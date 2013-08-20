@@ -63,7 +63,7 @@ fi
 REPO_URL="https://github.com/jlaska/ansible-rhevm-all-in-one.git"
 REPO_NAME=${REPO_URL##*/}
 REPO_NAME=${REPO_NAME%.git}
-rlRun "( test -d $REPO_NAME || git clone $REPO_URL ) cd $REPO_NAME"
+rlRun "( test -d $REPO_NAME || git clone $REPO_URL ) && cd $REPO_NAME"
 
 rlPhaseEnd
 
