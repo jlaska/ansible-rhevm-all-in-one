@@ -1,0 +1,19 @@
+#!/usr/bin/expect
+
+set timeout 4
+
+spawn "rhevm-reports-setup"
+
+expect "Would you like to stop the ovirt-engine service? (yes|no):"
+send "yes\n"
+
+expect "Please choose a password for the admin users (rhevm-admin and superuser):"
+send "redhat\n"
+
+expect "Re-type password:"
+send "redhat\n"
+
+# Wait for setup to complete
+set timeout 60
+
+expect "Succesfully installed ovirt-engine-reports."
