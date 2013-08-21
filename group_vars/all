@@ -4,6 +4,7 @@
 datacenter: local_datacenter
 export_domain: local_export
 appliance_url: ''
+appliance_min_memory: 4096
 
 #
 # rhevm-setup values
