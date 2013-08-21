@@ -44,13 +44,17 @@ class Cmd_Test(Cmd_Base):
 # =================================================
 class Cmd_VMS_List(Cmd_Base):
     def execute(self, args):
-        for vm in self._api.vms.list(args.filter):
-            output = "%s [state:%s, memory:%s]" % (vm.name, vm.status.state, vm.memory >> 20)
-            if vm.guest_info and vm.guest_info.ips:
-                output += " %s" % (", ".join([ip.address for ip in vm.guest_info.ips.ip]))
-            print output
-            for nic in vm.nics.list():
-                print " * %s/%s (%s)" % (nic.name, nic.interface, nic.mac.address)
+        vms = self._api.vms.list(args.filter)
+        if vms:
+            for vm in vms:
+                output = "%s [state:%s, memory:%s]" % (vm.name, vm.status.state, vm.memory >> 20)
+                if vm.guest_info and vm.guest_info.ips:
+                    output += " %s" % (", ".join([ip.address for ip in vm.guest_info.ips.ip]))
+                print output
+                for nic in vm.nics.list():
+                    print " * %s/%s (%s)" % (nic.name, nic.interface, nic.mac.address)
+        else:
+            raise Exception("No matching vm's found")
 
 class Cmd_VMS_Add(Cmd_Base):
     def execute(self, args):
