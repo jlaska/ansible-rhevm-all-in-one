@@ -44,6 +44,9 @@
 - name: rhevm_setup | rhevm-reports-setup
   shell: files/rhevm-reports-setup.exp
 
+- name: rhevm_setup | make sure ovirt-engine is running
+  service: name=ovirt-engine state=started
+
 - name: rhevm_setup | inspect current iptables rules
   shell: iptables -L | egrep "({{db_port}}|postgres)"
   ignore_errors: yes
