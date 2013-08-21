@@ -45,17 +45,17 @@
   shell: files/rhevm-reports-setup.exp
 
 - name: rhevm_setup | inspect current iptables rules
-  shell: iptables -L | egrep "(5432|postgres)"
+  shell: iptables -L | egrep "({{db_port}}|postgres)"
   ignore_errors: yes
-  register: is_port_5432_open
+  register: is_psql_port_open
 
-- name: rhevm_setup | open port 5432
-  shell: iptables -A INPUT -p tcp -m state --state NEW -m tcp --dport 5432 -j ACCEPT && service iptables save
-  when: is_port_5432_open|failed
+- name: rhevm_setup | open port {{db_port}}
+  shell: iptables -A INPUT -p tcp -m state --state NEW -m tcp --dport {{db_port}} -j ACCEPT && service iptables save
+  when: is_psql_port_open|failed
   notify: restart iptables
 
 - name: rhevm_setup | create cfme psql role
-  postgresql_user: state=present name=cfme password='redhat' role_attr_flags=SUPERUSER
+  postgresql_user: state=present name=cfme password='redhat' login_user={{db_admin}} login_password={{db_local_pass}} role_attr_flags=SUPERUSER
   notify: restart postgresql
 
 - name: rhevm_setup | service nfsd restart
