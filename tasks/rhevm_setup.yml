@@ -38,11 +38,35 @@
 - name: rhevm_setup | disable NFS4 support
   lineinfile: dest=/etc/sysconfig/nfs state=present regexp='^NFS4_SUPPORT=no' line='NFS4_SUPPORT=no'
 
+- name: rhevm_setup | determine if db exists - ovirt_engine_history
+  postgresql_db: state=present login_user={{db_admin}} login_password={{db_local_pass}}
+    name=ovirt_engine_history
+  register: is_db_present
+  ignore_errors: yes
+
+- name: rhevm_setup | remote temporary db ovirt_engine_history
+  postgresql_db: state=absent login_user={{db_admin}} login_password={{db_local_pass}}
+      name=ovirt_engine_history
+  when: is_db_present|success
+
 - name: rhevm_setup | rhevm-dwh-setup
   shell: echo "yes" | rhevm-dwh-setup
+  when: is_db_present|failed
+
+- name: rhevm_setup | determine if db exists - rhevmreports
+  postgresql_db: state=present login_user={{db_admin}} login_password={{db_local_pass}}
+      name=rhevmreports
+  register: is_db_present
+  ignore_errors: yes
+
+- name: rhevm_setup | remote temporary db rhevmreports
+  postgresql_db: state=absent login_user={{db_admin}} login_password={{db_local_pass}}
+      name=rhevmreports
+  when: is_db_present|success
 
 - name: rhevm_setup | rhevm-reports-setup
   shell: files/rhevm-reports-setup.exp
+  when: is_db_present|failed
 
 - name: rhevm_setup | make sure ovirt-engine is running
   service: name=ovirt-engine state=started
@@ -58,7 +82,7 @@
   notify: restart iptables
 
 - name: rhevm_setup | create cfme psql role
-  postgresql_user: state=present name=cfme password='redhat' login_user={{db_admin}} login_password={{db_local_pass}} role_attr_flags=SUPERUSER
+  postgresql_user: state=present name=cfme password={{db_local_pass}} login_user={{db_admin}} login_password={{db_local_pass}} role_attr_flags=SUPERUSER
   notify: restart postgresql
 
 - name: rhevm_setup | service nfsd restart
@@ -68,7 +92,7 @@
 # Prepare and activate storagedomain
 #
 
-- name: rhevm_setup | sleep 30s
+- name: rhevm_setup | hack - sleep 30s
   shell: sleep 30
 
 - name: rhevm_setup | check if storagedomain is already available
