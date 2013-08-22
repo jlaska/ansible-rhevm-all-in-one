@@ -40,6 +40,10 @@
    - include: tasks/rhevm_setup.yml
 
    - include: tasks/rhevm_import.yml
+     when: appliance_url != ''
+
+   - include: tasks/rhevm_launch.yml
+     when: appliance_url != ''
 
 # TODO - If install from rpm was unsuccesful, try building it from upstream
 # (refer to http://www.ovirt.org/Building_oVirt_engine)
