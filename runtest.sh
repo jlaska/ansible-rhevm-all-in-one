@@ -88,9 +88,9 @@ do
 done)
 
 # Assemble argument string
-ANSIBLE_ARGS="-i inventory"
+ANSIBLE_ARGS="-i inventory $ANSIBLE_ARGS"
 if [ -n "$EXTRA_VARS" ]; then
-   ANSIBLE_ARGS="-e \"$EXTRA_VARS\" $ANSIBLE_ARGS"
+   ANSIBLE_ARGS=" $ANSIBLE_ARGS -e \"$EXTRA_VARS\""
 fi
 
 # Run ansible
