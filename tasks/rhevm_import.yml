@@ -31,22 +31,3 @@
 - name: rhevm_import | storagedomains.template.import
   shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.templates.import --name {{appliance_name.stdout}}
   when: is_image_available|success
-
-## # Wait for template to be available
-## TRY=1
-## MAX_TRIES=60
-## while [ -z $($OVIRT_CLI storagedomains.templates.list | grep $APPLIANCE_NAME) ]; do
-##     rlLogInfo "Waiting for template '$APPLIANCE_NAME' to be available ($TRY) ..."
-##     sleep 5
-##     TRY=$((TRY+1))
-##     # Fail if unable to reach success after MAX_TRIES attempts
-##     if [ $TRY -gt $MAX_TRIES ]; then
-##         rlFail "Unable to determine template '$APPLIANCE_NAME' activation"
-##         rlRun "$OVIRT_CLI storagedomains.templates.list"
-##         rlRun "$OVIRT_CLI templates.list"
-##         break
-##     fi
-## done
-##
-## # Import template
-## rlRun "$OVIRT_CLI storagedomains.templates.import --name $APPLIANCE_NAME" 0
