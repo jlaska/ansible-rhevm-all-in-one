@@ -44,7 +44,7 @@
   register: is_db_present
   ignore_errors: yes
 
-- name: rhevm_setup | remote temporary db ovirt_engine_history
+- name: rhevm_setup | remove temporary db ovirt_engine_history
   postgresql_db: state=absent login_user={{db_admin}} login_password={{db_local_pass}}
       name=ovirt_engine_history
   when: is_db_present|success
@@ -59,7 +59,7 @@
   register: is_db_present
   ignore_errors: yes
 
-- name: rhevm_setup | remote temporary db rhevmreports
+- name: rhevm_setup | remove temporary db rhevmreports
   postgresql_db: state=absent login_user={{db_admin}} login_password={{db_local_pass}}
       name=rhevmreports
   when: is_db_present|success
