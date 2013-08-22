@@ -10,7 +10,14 @@ rhn_server_url: https://xmlrpc.rhn.redhat.com/XMLRPC
 #rhn_server_url: https://xmlrpc.rhn.errata.stage.redhat.com/XMLRPC
 #rhn_server_url: https://xmlrpc.qa.stage.redhat.com/XMLRPC
 rhn_channels:
-    - rhel-x86_64-server-6-cf-me-2
+    - rhel-x86_64-server-6-rpms
+    - rhel-x86_64-server-6-rhev-agent-rpms
+    - rhel-x86_64-server-6-rhev-mgmt-agent-rpms
+    - rhel-x86_64-server-6-rhevh-rpms
+    - rhel-x86_64-server-6-rhevm-3.1-rpms
+    - rhel-x86_64-server-6-rhevm-3.2-rpms
+    - rhel-x86_64-server-6-supplementary-rpms
+    - jb-eap-6-for-rhel-x86_64-6-server-rpms
 
 #
 # RHSM configuration
