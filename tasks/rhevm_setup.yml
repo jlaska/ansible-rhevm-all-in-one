@@ -41,32 +41,32 @@
 - name: rhevm_setup | determine if db exists - ovirt_engine_history
   postgresql_db: state=present login_user={{db_admin}} login_password={{db_local_pass}}
     name=ovirt_engine_history
-  register: is_db_present
+  register: engine_history_missing
   ignore_errors: yes
 
 - name: rhevm_setup | remove temporary db ovirt_engine_history
   postgresql_db: state=absent login_user={{db_admin}} login_password={{db_local_pass}}
       name=ovirt_engine_history
-  when: is_db_present|success
+  when: engine_history_missing|success
 
 - name: rhevm_setup | rhevm-dwh-setup
   shell: echo "yes" | rhevm-dwh-setup
-  when: is_db_present|failed
+  when: engine_history_missing|success
 
 - name: rhevm_setup | determine if db exists - rhevmreports
   postgresql_db: state=present login_user={{db_admin}} login_password={{db_local_pass}}
       name=rhevmreports
-  register: is_db_present
+  register: rhevm_reports_missing
   ignore_errors: yes
 
 - name: rhevm_setup | remove temporary db rhevmreports
   postgresql_db: state=absent login_user={{db_admin}} login_password={{db_local_pass}}
       name=rhevmreports
-  when: is_db_present|success
+  when: rhevm_reports_missing|success
 
 - name: rhevm_setup | rhevm-reports-setup
   shell: files/rhevm-reports-setup.exp
-  when: is_db_present|failed
+  when: rhevm_reports_missing|success
 
 - name: rhevm_setup | make sure ovirt-engine is running
   service: name=ovirt-engine state=started
