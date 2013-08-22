@@ -1,7 +1,7 @@
 ---
 
 - name: rhevm_launch | determine if template is available
-  shell: true
+  shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} templates.list --filter 'name={{appliance_name.stdout}}'
   register: is_template_available
   ignore_errors: yes
 
@@ -16,7 +16,7 @@
 
 - name: rhevm_launch | vm.add.nic
   shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} vm.add.nic --name {{appliance_name.stdout}}
-  when: is_vm_available|success
+  when: is_vm_available is defined and is_vm_available|success
 
 - name: rhevm_launch | determine vm memory size
   shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} vms.list --filter 'name={{appliance_name.stdout}} and memory>={{appliance_min_memory}}'
@@ -29,5 +29,4 @@
 
 - name: rhevm_launch | vm.start
   shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} vm.start --name={{appliance_name.stdout}}
-  when: is_vm_available|success
-
+  when: is_vm_available is defined and is_vm_available|success
