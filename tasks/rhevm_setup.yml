@@ -33,40 +33,28 @@
   shell: chown -R {{vdsm_uid.stdout}}:{{kvm_gid.stdout}} /export
 
 - name: rhevm_setup | define NFS export
-  lineinfile: dest=/etc/exports state=present regexp='^/export' line='/export 0.0.0.0/0.0.0.0(rw)'
+  lineinfile: dest=/etc/exports state=present regexp='^/export ' line='/export 0.0.0.0/0.0.0.0(rw)'
 
 - name: rhevm_setup | disable NFS4 support
   lineinfile: dest=/etc/sysconfig/nfs state=present regexp='^NFS4_SUPPORT=no' line='NFS4_SUPPORT=no'
 
 - name: rhevm_setup | determine if db exists - ovirt_engine_history
-  postgresql_db: state=present login_user={{db_admin}} login_password={{db_local_pass}}
-    name=ovirt_engine_history
-  register: engine_history_missing
+  shell: PGPASSWORD={{db_local_pass}} psql -U {{db_admin}} ovirt_engine_history -c "SELECT version()"
+  register: is_engine_history_present
   ignore_errors: yes
-
-- name: rhevm_setup | remove temporary db ovirt_engine_history
-  postgresql_db: state=absent login_user={{db_admin}} login_password={{db_local_pass}}
-      name=ovirt_engine_history
-  when: engine_history_missing|success
 
 - name: rhevm_setup | rhevm-dwh-setup
   shell: echo "yes" | rhevm-dwh-setup
-  when: engine_history_missing|success
+  when: is_engine_history_present|failed
 
 - name: rhevm_setup | determine if db exists - rhevmreports
-  postgresql_db: state=present login_user={{db_admin}} login_password={{db_local_pass}}
-      name=rhevmreports
-  register: rhevm_reports_missing
+  shell: PGPASSWORD={{db_local_pass}} psql -U {{db_admin}} rhevmreports -c "SELECT version()"
+  register: is_rhevmreports_present
   ignore_errors: yes
-
-- name: rhevm_setup | remove temporary db rhevmreports
-  postgresql_db: state=absent login_user={{db_admin}} login_password={{db_local_pass}}
-      name=rhevmreports
-  when: rhevm_reports_missing|success
 
 - name: rhevm_setup | rhevm-reports-setup
   shell: files/rhevm-reports-setup.exp
-  when: rhevm_reports_missing|success
+  when: is_rhevmreports_present|failed
 
 - name: rhevm_setup | make sure ovirt-engine is running
   service: name=ovirt-engine state=started
