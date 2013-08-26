@@ -40,6 +40,17 @@ class Cmd_Test(Cmd_Base):
             print "Success! Verified RHEV connectivity"
         return 0
 
+# User commands
+# =================================================
+class Cmd_Users_List(Cmd_Base):
+    def execute(self, args):
+        users = self._api.users.list()
+        if users:
+            for u in users:
+                print u.id, u.name, u.email
+        else:
+            raise Exception("No matching users found")
+
 # VM commands
 # =================================================
 class Cmd_VMS_List(Cmd_Base):
@@ -350,6 +361,10 @@ def parse_args():
     p = subparsers.add_parser('test',
             help='Test connectivity to RHEVM server')
     p.set_defaults(function=Cmd_Test)
+
+    p = subparsers.add_parser('users', parents=[parser_filter],
+            help='List available Users')
+    p.set_defaults(function=Cmd_Users_List)
 
     p = subparsers.add_parser('vms.list', parents=[parser_filter],
             help='List available VMs')
