@@ -80,6 +80,9 @@
 # Prepare and activate export storagedomain
 #
 
+- name: rhevm_setup | hack - sleep 30s
+  shell: sleep 30
+
 - name: rhevm_setup | check if storagedomain is already available
   shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} storagedomains.list --filter 'name={{export_domain}}'
   register: is_created
