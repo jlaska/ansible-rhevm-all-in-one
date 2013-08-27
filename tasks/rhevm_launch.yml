@@ -1,32 +1,32 @@
 ---
 
 - name: rhevm_launch | determine if template is available
-  shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} templates.list --filter 'name={{appliance_name.stdout}}'
+  local_action: shell files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} templates.list --filter 'name={{appliance_name.stdout}}'
   register: is_template_available
   ignore_errors: yes
 
 - name: rhevm_launch | vms.add
-  shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} vms.add --name {{appliance_name.stdout}} --template {{appliance_name.stdout}}
+  local_action: shell files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} vms.add --name {{appliance_name.stdout}} --template {{appliance_name.stdout}}
   when: is_template_available|success
 
 - name: rhevm_launch | wait for vms.add to complete
-  shell: MAX_TRIES=60 ; TRY=1 ; until files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} vms.list --filter 'name={{appliance_name.stdout}} and status=down' ; do [ $TRY -gt $MAX_TRIES ] && exit 1 ; sleep 5; TRY=$((TRY+1)) ; done
+  local_action: shell MAX_TRIES=60 ; TRY=1 ; until files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} vms.list --filter 'name={{appliance_name.stdout}} and status=down' ; do [ $TRY -gt $MAX_TRIES ] && exit 1 ; sleep 5; TRY=$((TRY+1)) ; done
   register: is_vm_available
   ignore_errors: yes
 
 - name: rhevm_launch | vm.add.nic
-  shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} vm.add.nic --name {{appliance_name.stdout}}
+  local_action: shell files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} vm.add.nic --name {{appliance_name.stdout}}
   when: is_vm_available is defined and is_vm_available|success
 
 - name: rhevm_launch | determine vm memory size
-  shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} vms.list --filter 'name={{appliance_name.stdout}} and memory>={{appliance_min_memory}}'
+  local_action: shell files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} vms.list --filter 'name={{appliance_name.stdout}} and memory>={{appliance_min_memory}}'
   ignore_errors: yes
   register: has_minimum_memory
 
 - name: rhevm_launch | adjust vm memory={{appliance_min_memory}}
-  shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} vm.update --name={{appliance_name.stdout}} --memory {{appliance_min_memory}}
+  local_action: shell files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} vm.update --name={{appliance_name.stdout}} --memory {{appliance_min_memory}}
   when: has_minimum_memory|failed
 
 - name: rhevm_launch | vm.start
-  shell: files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} vm.start --name={{appliance_name.stdout}}
+  local_action: shell files/ovirt-cli.py --url https://{{host_fqdn}}/api --username {{auth_user}} --password {{auth_pass}} vm.start --name={{appliance_name.stdout}}
   when: is_vm_available is defined and is_vm_available|success
