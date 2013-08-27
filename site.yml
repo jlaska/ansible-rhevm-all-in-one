@@ -35,7 +35,7 @@
      yum: name=$item state=present
      register: is_rhevm_rpm_installed
      ignore_errors: yes
-     with_items: ['rhevm', 'rhevm-setup-plugin-allinone', 'rhevm-sdk', 'ovirt-engine-sdk', 'rhevm-reports']
+     with_items: ['rhevm', 'rhevm-setup-plugin-allinone', 'rhevm-sdk', 'rhevm-reports']
 
    - include: tasks/rhevm_setup.yml
 
