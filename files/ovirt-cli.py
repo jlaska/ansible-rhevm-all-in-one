@@ -362,7 +362,7 @@ def parse_args():
             help='Test connectivity to RHEVM server')
     p.set_defaults(function=Cmd_Test)
 
-    p = subparsers.add_parser('users', parents=[parser_filter],
+    p = subparsers.add_parser('users.list', parents=[parser_filter],
             help='List available Users')
     p.set_defaults(function=Cmd_Users_List)
 
