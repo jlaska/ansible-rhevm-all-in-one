@@ -1,0 +1,30 @@
+[general]
+OVERRIDE_HTTPD_CONFIG={{override_httpd_config}}
+HTTP_PORT={{http_port}}
+HTTPS_PORT={{https_port}}
+RANDOM_PASSWORDS={{random_passwords}}
+
+{% if random_mac_range is defined %}
+MAC_RANGE={{random_mac_range.stdout}}
+{% else %}
+MAC_RANGE={{mac_range}}
+{% endif %}
+
+HOST_FQDN={{host_fqdn}}
+AUTH_PASS={{auth_pass}}
+ORG_NAME={{org_name}}
+DC_TYPE={{dc_type}}
+DB_REMOTE_INSTALL={{db_remote_install}}
+DB_HOST={{db_host}}
+DB_PORT={{db_port}}
+DB_ADMIN={{db_admin}}
+DB_REMOTE_PASS={{db_remote_pass}}
+DB_SECURE_CONNECTION={{db_secure_connection}}
+DB_LOCAL_PASS={{db_local_pass}}
+NFS_MP={{nfs_mp}}
+ISO_DOMAIN_NAME={{iso_domain_name}}
+CONFIG_NFS={{config_nfs}}
+OVERRIDE_FIREWALL={{override_firewall}}
+CONFIG_ALLINONE={{config_allinone}}
+STORAGE_PATH={{storage_path}}
+SUPERUSER_PASS={{superuser_pass}}
