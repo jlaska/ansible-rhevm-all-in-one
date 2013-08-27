@@ -1,0 +1,181 @@
+#!/usr/bin/python
+
+DOCUMENTATION = '''
+---
+module: ovirt_api
+short_description: Interface with oVirt via REST API
+description:
+    - FIXME
+version_added: "1.3"
+author: James Laska
+notes:
+    - FIXME
+requirements:
+    - python-requests
+    - lxml (optional)
+options:
+    state:
+        description:
+          - whether to register and subscribe (C(present)), or unregister (C(absent)) a system
+        required: false
+        choices: [ "present", "absent" ]
+        default: "present"
+    username:
+        description:
+            - Red Hat Network username
+        required: False
+        default: null
+    password:
+        description:
+            - Red Hat Network password
+        required: False
+        default: null
+    server_hostname:
+        description:
+            - Specify an alternative Red Hat Network server
+        required: False
+        default: Current value from C(/etc/rhsm/rhsm.conf) is the default
+    server_insecure:
+        description:
+            - Allow traffic over insecure http
+        required: False
+        default: Current value from C(/etc/rhsm/rhsm.conf) is the default
+    rhsm_baseurl:
+        description:
+            - Specify CDN baseurl
+        required: False
+        default: Current value from C(/etc/rhsm/rhsm.conf) is the default
+    autosubscribe:
+        description:
+            - Upon successful registration, auto-consume available subscriptions
+        required: False
+        default: False
+    activationkey:
+        description:
+            - supply an activation key for use with registration
+        required: False
+        default: null
+    pool:
+        description:
+            - Specify a subscription pool name to consume.  Regular expressions accepted.
+        required: False
+        default: '^$'
+examples:
+    FIXME
+'''
+
+import os
+import sys
+import argparse
+import json
+import urlparse
+import requests
+from lxml import etree
+
+class AttributeDict(dict):
+    '''convenience object to access dictionary keys as attributes'''
+    __getattr__ = dict.__getitem__
+    __setattr__ = dict.__setitem__
+
+# http://mousebender.wordpress.com/2006/11/10/recursive-getattrsetattr/
+def recurse_attr (cmp, obj, attr):
+    """Get object's attribute. May use dot notation.
+
+    >>> class C(object): pass
+    >>> a = C()
+    >>> a.b = C()
+    >>> a.b.c = 4
+    >>> recurse(a, 'b.c')
+    4
+    """
+    if '.' not in attr:
+        return cmp(obj, attr)
+    else:
+        L = attr.split('.')
+        return recurse_attr(cmp, getattr(obj, L[0]), '.'.join(L[1:]))
+
+def iterNodes(node, parentDict, depth=0):
+    nodeDict = dict()
+    try:
+        nodeDict.update(node.attrib)
+    except AttributeError:
+        pass
+    #if node.text is not None:
+    #    nodeDict['text'] = node.text
+
+    for i in node.iterchildren():
+        newDict = iterNodes(i, dict(), depth+1)
+        newList = list()
+        if i.tag in nodeDict:
+            try:
+                nodeDict[i.tag].append(newDict[i.tag])
+            except:
+                newList.append(nodeDict[i.tag])
+                nodeDict[i.tag] = newList
+                nodeDict[i.tag].append(newDict[i.tag])
+        else:
+            nodeDict.update(newDict)
+    tagList = node.tag.split(':')
+    namespace = '$'.join(tagList)
+    if nodeDict:
+        parentDict[namespace] = nodeDict
+    else:
+        parentDict[namespace] = node.text
+    return parentDict
+
+
+def main():
+
+    module = AnsibleModule(
+                argument_spec = dict(
+                    username = dict(default=None, required=True),
+                    password = dict(default=None, required=True),
+                    url = dict(default=None, required=True),
+                    method = dict(default='GET', required=False, type='str'),
+                    api = dict(default=None, required=True, type='str'),
+                    args = dict(default=None, required=False, type='str'),
+                    #args = dict(default={}, required=False, type='dict'),
+                )
+            )
+
+    username = module.params['username']
+    password = module.params['password']
+    url = module.params['url']
+    method = module.params['method']
+    api = module.params['api']
+    args = module.params['args']
+
+    try:
+        # Use ovirt REST API
+        creds = (username, password)
+        headers = {'content-type': 'application/json',
+                   'accept': 'application/json'}
+        if not url.endswith('/'):
+            url = url + '/'
+        r = requests.get(urlparse.urljoin(url, api),
+                verify=False, auth=creds, headers=headers,
+                params=module.from_json(args))
+
+        # Attempt to parse json response
+        try:
+            response = r.json()
+        except Exception, e:
+            response = str(r.text)
+            # Convert XML response to JSON (ugly ... shouldn't oVirt support
+            # application/json)?
+
+            # Remove text between elements
+            parser = etree.XMLParser(remove_blank_text=True)
+            # Convert to xml object from string
+            root = etree.XML(response, parser=parser)
+            # Convert xml to json dictionary
+            response = iterNodes(root, dict())
+
+    except Exception, e:
+        module.fail_json(msg="Failed: %s" % e)
+    else:
+        module.exit_json(changed=True, msg="Success!", json=response)
+
+# include magic from lib/ansible/module_common.py
+#<<INCLUDE_ANSIBLE_MODULE_COMMON>>
+main()
