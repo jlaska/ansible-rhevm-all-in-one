@@ -133,8 +133,8 @@ def main():
                     url = dict(default=None, required=True),
                     method = dict(default='GET', required=False, type='str'),
                     api = dict(default=None, required=True, type='str'),
-                    args = dict(default=None, required=False, type='str'),
-                    #args = dict(default={}, required=False, type='dict'),
+                    params = dict(default='{}', required=False, type='str'),
+                    #params = dict(default={}, required=False, type='dict'),
                 )
             )
 
@@ -143,18 +143,24 @@ def main():
     url = module.params['url']
     method = module.params['method']
     api = module.params['api']
-    args = module.params['args']
+    params = module.params['params']
 
     try:
         # Use ovirt REST API
         creds = (username, password)
         headers = {'content-type': 'application/json',
                    'accept': 'application/json'}
+
+        # Shouldn't urljoin figure this out?
         if not url.endswith('/'):
             url = url + '/'
+        if api.startswith('/'):
+            api = api[1:]
+
+        # Issue oVirt request
         r = requests.get(urlparse.urljoin(url, api),
                 verify=False, auth=creds, headers=headers,
-                params=module.from_json(args))
+                params=module.from_json(params))
 
         # Attempt to parse json response
         try:
