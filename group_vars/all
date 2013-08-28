@@ -1,3 +1,9 @@
+ovirt_engine_rpms: 
+   - ovirt-engine
+   - ovirt-engine-setup-plugin-allinone
+   - ovirt-engine-sdk
+   - ovirt-engine-reports
+
 #
 #
 #

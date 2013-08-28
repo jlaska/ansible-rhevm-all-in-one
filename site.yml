@@ -21,6 +21,14 @@
      when: rhn_method is defined
 
 #
+# For Fedora hosts, install ovirt-release-fedora
+#
+- hosts: Fedora
+  tasks:
+   - name: install ovirt-release-fedora
+     yum: name=http://resources.ovirt.org/releases/ovirt-release-fedora.noarch.rpm state=present
+
+#
 # For all other hosts, install CFME
 #
 - hosts: local
@@ -35,7 +43,7 @@
      yum: name=$item state=present
      register: is_rhevm_rpm_installed
      ignore_errors: yes
-     with_items: ['rhevm', 'rhevm-setup-plugin-allinone', 'rhevm-sdk', 'rhevm-reports']
+     with_items: ovirt_engine_rpms
 
    - include: tasks/rhevm_setup.yml
 
