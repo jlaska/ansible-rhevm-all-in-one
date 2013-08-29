@@ -1,5 +1,6 @@
 ---
-# Base playbook for cfme installation
+# Base playbook for rhevm-all-in-one installation
+# (https://access.redhat.com/site/solutions/265803)
 
 #
 # Dynamically create host groups based on distribution
