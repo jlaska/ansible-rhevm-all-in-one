@@ -3,6 +3,9 @@ ovirt_engine_rpms:
    - ovirt-engine-setup-plugin-allinone
    - ovirt-engine-sdk
    - ovirt-engine-reports
+ovirt_etc_dir: /etc/ovirt-engine
+ovirt_engine_answers: $ovirt_etc_dir/answers.cfg
+ovirt_setup: engine-setup
 
 #
 #
@@ -33,6 +36,7 @@ host_fqdn: $ansible_fqdn
 auth_user: "admin@internal"
 auth_pass: "redhat"
 org_name: $ansible_domain
+application_mode: "both"
 dc_type: "NFS"
 db_remote_install: "local"
 db_host: ""

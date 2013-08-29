@@ -8,13 +8,19 @@
 - name: rhevm_setup | determine version of rhevm installed
   shell: rpm -q --qf '%{version}' rhevm
   register: rhevm_version
+  when: ansible_distribution == 'RedHat'
+
+- name: rhevm_setup | determine version of ovirt-engine installed
+  shell: rpm -q --qf '%{version}' ovirt-engine
+  register: rhevm_version
+  when: ansible_distribution == 'Fedora'
 
 - name: rhevm_setup | generate answers.cfg files
-  template: src=files/answers-{{rhevm_version.stdout}}.cfg.j2 dest=/etc/rhevm/answers.cfg
+  template: src=files/answers-{{rhevm_version.stdout}}.cfg.j2 dest={{ovirt_engine_answers}}
         owner=root group=root mode=0644
 
-- name: rhevm_setup | rhevm-setup --answer-file /etc/rhevm/answers.cfg
-  shell: rhevm-setup --answer-file /etc/rhevm/answers.cfg
+- name: rhevm_setup | rhevm-setup --answer-file {{ovirt_engine_answers}}
+  shell: $ovirt_setup --answer-file {{ovirt_engine_answers}}
      creates=/etc/pki/ovirt-engine/keys/engine.p12
 
 - name: rhevm_setup | mkdir /export

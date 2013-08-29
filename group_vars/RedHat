@@ -3,6 +3,9 @@ ovirt_engine_rpms:
    - rhevm-setup-plugin-allinone
    - rhevm-sdk
    - rhevm-reports
+ovirt_etc_dir: /etc/rhevm
+ovirt_engine_answers: $ovirt_etc_dir/answers.cfg
+ovirt_setup: rhevm-setup
 
 rhn_method: rhsm
 rhn_username:
