@@ -10,6 +10,7 @@ ovirt_dwh_setup: rhevm-dwh-setup
 ovirt_dwh_db: ovirt_engine_history
 ovirt_reports_setup: files/rhevm-reports-setup.exp
 ovirt_reports_db: rhevmreports
+ovirt_image_uploader: rhevm-image-uploader
 
 rhn_method: rhsm
 rhn_username:

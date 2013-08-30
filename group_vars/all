@@ -10,7 +10,7 @@ ovirt_dwh_setup: ovirt-engine-dwh-setup
 ovirt_dwh_db: ovirt_engine_history
 ovirt_reports_setup: files/ovirt-engine-reports-setup.exp
 ovirt_reports_db: ovirtenginereports
-
+ovirt_image_uploader: engine-image-uploader
 
 #
 #

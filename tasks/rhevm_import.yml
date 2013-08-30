@@ -4,7 +4,13 @@
   lineinfile: dest={{item}} state=present regexp='^passwd=' line='passwd={{auth_pass}}'
   with_items:
     - /etc/rhevm/imageuploader.conf
+  when: ansible_distribution == 'RedHat'
+
+- name: rhevm_import | enable non-interactive rhevm-image-uploader
+  lineinfile: dest={{item}} state=present regexp='^passwd=' line='passwd={{auth_pass}}'
+  with_items:
     - /etc/ovirt-engine/imageuploader.conf
+  when: ansible_distribution == 'Fedora'
 
 - name: rhevm_import | download appliance
   get_url: url={{appliance_url}} dest=/tmp mode=0640
@@ -20,7 +26,7 @@
   ignore_errors: yes
 
 - name: rhevm_import | rhevm-image-uploader
-  shell: rhevm-image-uploader -v -e {{export_domain}} --name {{appliance_name.stdout}} upload {{appliance_file.dest}}
+  shell: $ovirt_image_uploader -v -e {{export_domain}} --name {{appliance_name.stdout}} upload {{appliance_file.dest}}
   when: is_image_uploaded|failed
 
 - name: rhevm_import | wait for template upload to complete
