@@ -6,6 +6,10 @@ ovirt_engine_rpms:
 ovirt_etc_dir: /etc/rhevm
 ovirt_engine_answers: $ovirt_etc_dir/answers.cfg
 ovirt_setup: rhevm-setup
+ovirt_dwh_setup: rhevm-dwh-setup
+ovirt_dwh_db: ovirt_engine_history
+ovirt_reports_setup: files/rhevm-reports-setup.exp
+ovirt_reports_db: rhevmreports
 
 rhn_method: rhsm
 rhn_username:

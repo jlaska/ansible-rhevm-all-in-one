@@ -44,22 +44,22 @@
 - name: rhevm_setup | disable NFS4 support
   lineinfile: dest=/etc/sysconfig/nfs state=present regexp='^NFS4_SUPPORT=no' line='NFS4_SUPPORT=no'
 
-- name: rhevm_setup | determine if db exists - ovirt_engine_history
-  shell: PGPASSWORD={{db_local_pass}} psql -U {{db_admin}} ovirt_engine_history -c "SELECT version()"
+- name: rhevm_setup | determine if db exists - $ovirt_dwh_dbname
+  shell: PGPASSWORD={{db_local_pass}} psql -U {{db_admin}} $ovirt_dwh_dbname -c "SELECT version()"
   register: is_engine_history_present
   ignore_errors: yes
 
 - name: rhevm_setup | rhevm-dwh-setup
-  shell: echo "yes" | rhevm-dwh-setup
+  shell: echo "yes" | $ovirt_dwh_setup
   when: is_engine_history_present|failed
 
-- name: rhevm_setup | determine if db exists - rhevmreports
-  shell: PGPASSWORD={{db_local_pass}} psql -U {{db_admin}} rhevmreports -c "SELECT version()"
+- name: rhevm_setup | determine if db exists - $ovirt_reports_dbname
+  shell: PGPASSWORD={{db_local_pass}} psql -U {{db_admin}} $ovirt_reports_dbname -c "SELECT version()"
   register: is_rhevmreports_present
   ignore_errors: yes
 
 - name: rhevm_setup | rhevm-reports-setup
-  shell: files/rhevm-reports-setup.exp
+  shell: $ovirt_reports_setup
   when: is_rhevmreports_present|failed
 
 - name: rhevm_setup | make sure ovirt-engine is running
